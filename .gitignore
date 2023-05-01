@@ -1,0 +1,9 @@
+# env
+env.sh
+
+# rust
+/target
+
+# perf
+*.data.old
+*.data
