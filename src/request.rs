@@ -23,20 +23,18 @@ pub struct Light {
     color: Color,
 }
 
-pub fn get(http_rest_host: &url::Url, http_rest_pass: &str) -> Result<Light, Box<dyn Error>> {
+pub fn get(http_rest_host: &str, http_rest_pass: &str) -> Result<Light, Box<dyn Error>> {
     let client: reqwest::blocking::Client = reqwest::blocking::Client::new();
-    let url = http_rest_host.join("api/light")?;
-    let request = client.get(url)
+    let request = client.get(http_rest_host)
         .header("API-Key", http_rest_pass)
         .send()?;
 
     Ok(request.json()?)
 }
 
-pub fn patch(http_rest_host: &url::Url, http_rest_pass: &str, message: String) -> Result<Light, Box<dyn Error>> {
+pub fn patch(http_rest_host: &str, http_rest_pass: &str, message: String) -> Result<Light, Box<dyn Error>> {
     let client: reqwest::blocking::Client = reqwest::blocking::Client::new();
-    let url = http_rest_host.join("api/light")?;
-    let request = client.patch(url)
+    let request = client.patch(http_rest_host)
         .header("API-Key", http_rest_pass)
         .body(message).send()?;
 
@@ -44,21 +42,21 @@ pub fn patch(http_rest_host: &url::Url, http_rest_pass: &str, message: String) -
 }
 
 impl Light {
-    pub fn is_powered_off(http_rest_host: &url::Url, http_rest_pass: &str) -> Result<bool, Box<dyn Error>>  {
+    pub fn is_powered_off(http_rest_host: &str, http_rest_pass: &str) -> Result<bool, Box<dyn Error>>  {
         match get(http_rest_host, http_rest_pass) {
             Ok(Light { state, .. }) => Ok(state == State::OFF),
             Err(why) => Err(why),
         }
     }
 
-    pub fn power_on(http_rest_host: &url::Url, http_rest_pass: &str) -> Result<Light, Box<dyn Error>> {
+    pub fn power_on(http_rest_host: &str, http_rest_pass: &str) -> Result<Light, Box<dyn Error>> {
         let ref light: Light = Light {state: State::ON, brightness: u8::MAX, white_value: u8::MAX, ..Default::default()};
 
         let message = serde_json::to_string(light)?;
         patch(http_rest_host, http_rest_pass, message)
     }
 
-    pub fn power_off(http_rest_host: &url::Url, http_rest_pass: &str) -> Result<Light, Box<dyn Error>> {
+    pub fn power_off(http_rest_host: &str, http_rest_pass: &str) -> Result<Light, Box<dyn Error>> {
         let ref light: Light = Light {state: State::OFF, ..Default::default()};
 
         let message = serde_json::to_string(light)?;
