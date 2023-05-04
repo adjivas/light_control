@@ -39,23 +39,23 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
     loop {
         if let Some(Some(was_time)) = it_events.next() {
-            println!("PowerOn!{:?}", was_time);
+            if Light::power_on(&http_rest_host, http_rest_pass).is_some() {
+                println!("PowerOn!{:?}", was_time);
 
-            Light::power_on(&http_rest_host, http_rest_pass)?;
+                it_events.fold_while(was_time, |was_time, event| match event {
+                    Some(time) => Continue(time),
+                    None if was_time + switch_exposure > Instant::now() => Continue(was_time),
+                    None => Done(was_time),
+                }).into_inner();
 
-            it_events.fold_while(was_time, |was_time, event| match event {
-                Some(time) => Continue(time),
-                None if was_time + switch_exposure > Instant::now() => Continue(was_time),
-                None => Done(was_time),
-            }).into_inner();
+                println!("PowerOff!{:?}", Instant::now());
 
-            println!("PowerOff!{:?}", Instant::now());
+                if Light::power_off(&http_rest_host, http_rest_pass).is_some() {
+                    it_events.dropping(switch_post_exposure);
 
-            Light::power_off(&http_rest_host, http_rest_pass)?;
-
-            it_events.dropping(switch_post_exposure);
-
-            println!("PowerPostOff!{:?}", Instant::now());
+                    println!("PowerPostOff!{:?}", Instant::now());
+                }
+            }
         }
     }
 }

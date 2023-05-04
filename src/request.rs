@@ -49,17 +49,27 @@ impl Light {
         }
     }
 
-    pub fn power_on(http_rest_host: &str, http_rest_pass: &str) -> Result<Light, Box<dyn Error>> {
-        let ref light: Light = Light {state: State::ON, brightness: u8::MAX, white_value: u8::MAX, ..Default::default()};
+    pub fn power_on(http_rest_host: &str, http_rest_pass: &str) -> Option<Light> {
+        match Self::is_powered_off(http_rest_host, http_rest_pass) {
+            Ok(true) => {
+                let ref light: Light = Light {state: State::ON, brightness: u8::MAX, white_value: u8::MAX, ..Default::default()};
+                let message = serde_json::to_string(light).ok()?;
 
-        let message = serde_json::to_string(light)?;
-        patch(http_rest_host, http_rest_pass, message)
+                patch(http_rest_host, http_rest_pass, message).ok()
+            },
+            _ => None,
+        }
     }
 
-    pub fn power_off(http_rest_host: &str, http_rest_pass: &str) -> Result<Light, Box<dyn Error>> {
-        let ref light: Light = Light {state: State::OFF, ..Default::default()};
+    pub fn power_off(http_rest_host: &str, http_rest_pass: &str) -> Option<Light> {
+        match Self::is_powered_off(http_rest_host, http_rest_pass) {
+            Ok(false) => {
+                let ref light: Light = Light {state: State::OFF, ..Default::default()};
 
-        let message = serde_json::to_string(light)?;
-        patch(http_rest_host, http_rest_pass, message)
+                let message = serde_json::to_string(light).ok()?;
+                patch(http_rest_host, http_rest_pass, message).ok()
+            },
+            _ => None,
+        }
     }
 }
