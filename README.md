@@ -1,4 +1,6 @@
 # Light Control
+![badge](https://framagit.org/adjivas/light_control/badges/master/pipeline.svg)
+
 This service will captures a MQTT motion stream controls a light.
 
 ## Play with it!
