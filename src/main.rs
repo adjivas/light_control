@@ -7,11 +7,8 @@ use std::{time::{Duration, Instant}, thread::sleep};
 
 use light::Light;
 
-use itertools::Itertools;
-use itertools::FoldWhile::{Continue, Done};
-use rumqttc::v5::{Client, MqttOptions, Event};
-use rumqttc::v5::mqttbytes::QoS;
-use rumqttc::v5::mqttbytes::v5::{Publish, Packet};
+use itertools::{Itertools, FoldWhile::{Continue, Done}};
+use rumqttc::v5::{Client, MqttOptions, Event, mqttbytes::{QoS, v5::{Publish, Packet}}};
 use chrono::{Local, Datelike};
 
 fn main() -> Result<(), Box<dyn Error>> {
