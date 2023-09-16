@@ -1,10 +1,8 @@
-image: docker
+image: docker:latest
 services:
     - docker:dind
 variables:
-    DOCKER_HOST: tcp://docker:2375/
     DOCKER_DRIVER: overlay2
-    CROSS_REMOTE: 1
     DOCKER_TLS_CERTDIR: ""
 stages:
   - test
@@ -13,6 +11,7 @@ test:
   image: haelty/rust-test-cross
   only:
     - master
-    - cross-ci
   script:
-      - cross build --target armv7-unknown-linux-gnueabihf --release
+    - docker --version
+    - docker pull "haelty/rust-test-cross"
+    - cross build --target armv7-unknown-linux-gnueabihf --release
