@@ -36,7 +36,10 @@ impl Light {
     pub fn power_on(http_rest_host: &str, http_rest_pass: &str) -> Option<Light> {
         match Self::is_powered_off(http_rest_host, http_rest_pass) {
             Ok(true) => {
-                let ref light: Light = Light {state: State::ON, brightness: u8::MAX, white_value: u8::MAX, ..Default::default()};
+                let ref light: Light = Light {
+                    state: State::ON, brightness: 10, white_value: 0,
+                    color: Color {b: 255, ..Default::default()}
+                };
                 let message = serde_json::to_string(light).ok()?;
 
                 patch(http_rest_host, http_rest_pass, message).ok()
