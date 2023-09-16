@@ -20,12 +20,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mqtt_port = mqtt_port.parse::<u16>().unwrap();
     let mqtt_subcribe = Box::leak(std::env::var("MQTT_SUBSCRIBE").unwrap().into_boxed_str()) as &'static str;
     let mqtt_keep_alive = Duration::from_secs(10);
-    let mqtt_interval_recv = Duration::from_millis(100);
+    let mqtt_interval_recv = Duration::from_millis(500);
     let light_exposure = Box::leak(std::env::var("LIGHT_EXPOSURE").unwrap().into_boxed_str()) as &'static str;
     let light_exposure = Duration::from_secs(light_exposure.parse::<u64>().unwrap());
-    let light_post_exposure = Box::leak(std::env::var("LIGHT_POST_EXPOSURE").unwrap().into_boxed_str()) as &'static str;
-    let light_post_exposure = light_post_exposure.parse::<u64>().unwrap();
-    let light_post_exposure = Duration::from_secs(light_post_exposure);
     let light_latitude = Box::leak(std::env::var("LIGHT_LATITUDE").unwrap().into_boxed_str()) as &'static str;
     let light_latitude = light_latitude.parse::<f64>().unwrap();
     let light_longitude = Box::leak(std::env::var("LIGHT_LONGITUDE").unwrap().into_boxed_str()) as &'static str;
@@ -52,7 +49,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     loop {
-        if let Some(Some(was_time)) = it_events.next() {
+        if let (Some(Some(_)), Some(Some(was_time))) = (it_events.next(), it_events.next()) {
             let local = Local::now();
             let (sunrise, sunset) = sunrise::sunrise_sunset(light_latitude, light_longitude, local.year(), local.month(), local.day());
             let sunshine: bool = sunrise <= local.timestamp() && local.timestamp() <= sunset;
@@ -70,15 +67,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
                     println!("PowerOff!{:?}", Instant::now());
 
-                    if Light::power_off(&http_rest_host, http_rest_pass).is_some() {
-                        it_events.fold_while(Instant::now() + light_post_exposure, |was_time, _event| {
-                            if was_time > Instant::now() {
-                                Continue(was_time)
-                            } else {
-                                Done(was_time)
-                            }
-                        }).into_inner();
-                    }
+                    Light::power_off(&http_rest_host, http_rest_pass);
                 }
             }
         }
