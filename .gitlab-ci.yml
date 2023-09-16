@@ -1,9 +1,18 @@
+image: docker
+services:
+    - docker:dind
+variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_DRIVER: overlay2
+    CROSS_REMOTE: 1
+    DOCKER_TLS_CERTDIR: ""
 stages:
-  - build
-
-rust-latest:
-  stage: build
-  image: rust:latest
+  - test
+test:
+  stage: test
+  image: haelty/rust-test-cross
+  only:
+    - master
+    - cross-ci
   script:
-    - cargo build --verbose
-    - cargo test --verbose
+      - cross build --target armv7-unknown-linux-gnueabihf --release
